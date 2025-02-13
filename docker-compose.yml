@@ -1,0 +1,49 @@
+version: '3.8'
+services:
+  payment-app:
+    build: .
+    container_name: payment-app
+    ports:
+      - "8000:8000"
+    # volumes:
+    #   - ./:/var/www/html
+    depends_on:
+      - mariadb
+    environment:
+      DB_HOST: mariadb
+      DB_DATABASE: payments_db
+      DB_USERNAME: root
+      DB_PASSWORD: secret
+    networks:
+      - payment-net
+
+  mariadb:
+    image: mariadb:10.5
+    container_name: payment-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - payment-net
+
+  # Optional: Adminer for DB UI
+  adminer:
+    image: adminer:latest
+    container_name: payment-adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: mariadb
+    networks:
+      - payment-net
+
+networks:
+  payment-net:
+    driver: bridge
+
+volumes:
+  db_data:
